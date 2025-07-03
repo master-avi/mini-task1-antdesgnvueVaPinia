@@ -4,7 +4,7 @@
     <a-menu
       mode="inline"
       theme="dark"
-      :selectedKeys="[selectedKey]"
+      :selectedKeys="selectedKeys"
       @click="onClick"
     >
       <a-menu-item key="/posts"><span>Posts</span></a-menu-item>
@@ -16,12 +16,23 @@
 
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import { ref } from 'vue'
-const route = useRoute(), router = useRouter()
-const selectedKey = ref(route.path)
+import { ref, watch } from 'vue'
+
+const route = useRoute()
+const router = useRouter()
+const selectedKeys = ref([route.path])
+
+// Следим за изменениями маршрута
+watch(
+  () => route.path,
+  (newPath) => {
+    selectedKeys.value = [newPath]
+  },
+  { immediate: true } // Вызываем сразу при создании
+)
 
 function onClick(e) {
-  selectedKey.value = e.key
+  selectedKeys.value = [e.key]
   router.push(e.key)
 }
 </script>
@@ -30,6 +41,6 @@ function onClick(e) {
 .logo {
   height: 32px;
   margin: 16px;
-  background: #1890ff;
+  background: rgba(255, 255, 255, 0.3);
 }
 </style>

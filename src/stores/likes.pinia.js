@@ -26,5 +26,14 @@ export const useLikesStore = defineStore('likes', () => {
     return likedPosts.value.some(p => p.id === post.id)
   }
 
-  return { likedPosts, toggleLike, isLiked }
+  function removeLike(post) {
+    likedPosts.value = likedPosts.value.filter(p => p.id !== post.id)
+  }
+
+  return {
+    likedPosts,
+    toggleLike,
+    isLiked,
+    removeLike
+  }
 })

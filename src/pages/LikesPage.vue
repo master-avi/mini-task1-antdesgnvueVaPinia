@@ -38,8 +38,8 @@
 </template>
 
 <script setup>
-import PostCard from '@/components/PostCard.vue'
-import { useLikesStore } from '@/stores/likes'
+import PostCard from './posts/components/PostCard.vue'
+import { useLikesStore } from '@/stores/likes.pinia'
 import { storeToRefs } from 'pinia'
 import { HeartOutlined } from '@ant-design/icons-vue'
 import { ref, onMounted } from 'vue'
