@@ -9,7 +9,6 @@
         <router-view />
       </a-layout-content>
       <a-layout-footer style="text-align:center">
-        Ant Design Vue ©2025
       </a-layout-footer>
     </a-layout>
   </a-layout>

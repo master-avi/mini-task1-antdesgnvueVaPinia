@@ -5,7 +5,7 @@
     </a-form-item>
 
     <a-form-item label="Body">
-      <a-textarea v-model:value="body" required rows="4" />
+      <a-textarea v-model:value="body" required :rows="4" />
     </a-form-item>
 
     <a-button type="primary" html-type="submit">Add Post</a-button>

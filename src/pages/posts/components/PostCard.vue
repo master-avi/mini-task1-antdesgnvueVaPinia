@@ -2,7 +2,7 @@
   <a-card
     hoverable
     class="post-card"
-    @click="emit('openModal', post)"
+    @click="handleCardClick"
   >
     <template #cover>
       <div class="image-wrapper">
@@ -16,17 +16,15 @@
             class="post-img"
           />
         </transition>
-        
       </div>
-        <div class="content-section">
-        <h3 class="post-title">{{ post.title }}</h3>
-        <p class="post-description">{{ post.body }}</p>
-      </div>
-      
     </template>
 
     <div class="card-body">
-    
+      <div class="content-section">
+        <h3 class="post-title">{{ post.title }}</h3>
+        <p class="post-description">{{ post.body }}</p>
+      </div>
+
       <div class="actions-section" @click.stop>
         <a-button type="text" @click.stop="toggleLike">
           <template #icon>
@@ -36,33 +34,43 @@
           {{ isLiked ? 'Liked' : 'Like' }}
         </a-button>
 
-        <a-popconfirm
-          title="Вы уверены, что хотите удалить пост?"
-          @confirm="deletePost"
-        >
-          <a-button type="text" danger>
-            <DeleteOutlined />
-            Удалить
+        <a-button type="text" @click.stop="handleCardClick">
+          <MessageOutlined />
+          View
+        </a-button>
+
+        <!-- Faqat showActions true bo‘lsa, Edit/Delete chiqadi -->
+        <template v-if="showActions">
+          <a-button type="text" @click.stop="emit('edit', post)">
+            ✏️ Edit
           </a-button>
-        </a-popconfirm>
+
+          <a-popconfirm
+            title="Are you sure you want to delete this post?"
+            @confirm="deletePost"
+          >
+            <a-button type="text" danger>
+              <DeleteOutlined />
+              Delete
+            </a-button>
+          </a-popconfirm>
+        </template>
       </div>
     </div>
   </a-card>
 </template>
 
 <script setup>
-import { HeartFilled, HeartOutlined, DeleteOutlined } from '@ant-design/icons-vue'
+import { HeartFilled, HeartOutlined, DeleteOutlined, MessageOutlined } from '@ant-design/icons-vue'
 import { useLikesStore } from '@/stores/likes.pinia'
 import { usePostsStore } from '@/stores/posts.pinia'
 import { computed, ref } from 'vue'
 
-const emit = defineEmits(['openModal'])
+const emit = defineEmits(['openModal', 'edit'])
 
 const props = defineProps({
-  post: {
-    type: Object,
-    required: true
-  }
+  post: { type: Object, required: true },
+  showActions: { type: Boolean, default: true }
 })
 
 const loading = ref(true)
@@ -70,16 +78,20 @@ const loading = ref(true)
 const likesStore = useLikesStore()
 const postsStore = usePostsStore()
 
-const isLiked = computed(() => {
-  return likesStore.isLiked(props.post)
-})
+const isLiked = computed(() => likesStore.isLiked(props.post))
 
-function toggleLike() {
+function handleCardClick() {
+  emit('openModal', props.post)
+}
+
+function toggleLike(e) {
+  e.stopPropagation()
   likesStore.toggleLike(props.post)
 }
 
-function deletePost() {
-  likesStore.removeLike?.(props.post) // optional chaining for compatibility
+function deletePost(e) {
+  e.stopPropagation()
+  likesStore.removeLike?.(props.post)
   postsStore.deletePost(props.post.id)
 }
 </script>
@@ -90,7 +102,7 @@ function deletePost() {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-
+  cursor: pointer;
 }
 
 .card-body {
@@ -99,13 +111,11 @@ function deletePost() {
   height: 100%;
   padding: 16px;
   flex: 1;
-
 }
 
 .content-section {
   flex: 1;
-  padding: 16px;
-  min-height: 0; /* Важно для корректного сжатия */
+  min-height: 0;
 }
 
 .post-title {
@@ -129,7 +139,9 @@ function deletePost() {
 .actions-section {
   display: flex;
   justify-content: space-between;
-  margin-top: auto; /* Ключевое свойство - прижимает к низу */
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
   padding-top: 12px;
   border-top: 1px solid #f0f0f0;
 }
@@ -156,5 +168,4 @@ function deletePost() {
   opacity: 0;
   transform: translateY(-10px);
 }
-
 </style>
