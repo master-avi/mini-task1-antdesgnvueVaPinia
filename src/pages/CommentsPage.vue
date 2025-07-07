@@ -32,7 +32,6 @@ const localComments = ref([])
 const currentPage = ref(1)
 const pageSize = 10
 
-// LocalStorage'dan foydalanuvchi qo‘shgan kommentlarni olish
 function getLocalComments() {
   const all = []
   for (let key in localStorage) {
@@ -49,12 +48,11 @@ function getLocalComments() {
   return all
 }
 
-// Barcha kommentlarni birlashtirish (API + Local)
 const combinedComments = computed(() => {
   return [...localComments.value, ...comments.value]
 })
 
-// Sahifalash
+
 const paginatedComments = computed(() => {
   const start = (currentPage.value - 1) * pageSize
   const end = start + pageSize
@@ -79,5 +77,4 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Optional styling */
 </style>

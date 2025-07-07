@@ -1,4 +1,3 @@
-<!-- src/components/posts/components/EditPostForm.vue -->
 <template>
   <a-form @submit.prevent="submitForm" layout="vertical">
     <a-form-item label="Title">

@@ -31,18 +31,16 @@
             <heart-filled v-if="isLiked" style="color: red" />
             <heart-outlined v-else />
           </template>
-          {{ isLiked ? 'Liked' : 'Like' }}
+          {{ isLiked ? $t('like') : $t('liked') }}
         </a-button>
 
         <a-button type="text" @click.stop="handleCardClick">
           <MessageOutlined />
-          View
+          {{ t('view') }}
         </a-button>
-
-        <!-- Faqat showActions true bo‘lsa, Edit/Delete chiqadi -->
         <template v-if="showActions">
           <a-button type="text" @click.stop="emit('edit', post)">
-            ✏️ Edit
+            ✏️{{ t('edit') }}
           </a-button>
 
           <a-popconfirm
@@ -51,7 +49,7 @@
           >
             <a-button type="text" danger>
               <DeleteOutlined />
-              Delete
+              {{ t('delete') }}
             </a-button>
           </a-popconfirm>
         </template>
@@ -65,7 +63,9 @@ import { HeartFilled, HeartOutlined, DeleteOutlined, MessageOutlined } from '@an
 import { useLikesStore } from '@/stores/likes.pinia'
 import { usePostsStore } from '@/stores/posts.pinia'
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const emit = defineEmits(['openModal', 'edit'])
 
 const props = defineProps({

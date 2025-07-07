@@ -1,101 +1,115 @@
 <template>
   <PageLoader>
     <div class="liked-posts-wrapper">
-      <h2>Liked Posts ({{ likedPosts.length }})</h2>
-
+      <!-- 🔒 LOGIN TEKSHIRISH -->
       <a-alert
-        v-if="loading"
-        message="Loading your liked posts..."
-        type="info"
+        v-if="!auth.isLoggedIn()"
+        message="Iltimos, yoqtirgan postlaringizni ko‘rish uchun login qiling."
+        type="warning"
         show-icon
         class="loading-alert"
       />
 
-      <a-row :gutter="[16, 16]" class="posts" v-else>
-        <a-col
-          v-for="p in likedPosts"
-          :key="p.id"
-          :xs="24"
-          :sm="12"
-          :md="8"
-        >
-          <PostCard :post="p" :showActions="false" @openModal="openPostModal" />
-        </a-col>
-      </a-row>
+      <!-- LOGIN BO‘LGAN HOLATDA -->
+      <template v-else>
+        <h2>Liked Posts ({{ likedPosts.length }})</h2>
 
-      <a-empty
-        v-if="!loading && likedPosts.length === 0"
-        description="You haven't liked any posts yet"
-        class="empty-state"
-      >
-        <template #image>
-          <heart-outlined style="font-size: 48px; color: #ff4d4f;" />
-        </template>
-        <a-button type="primary" @click="$router.push('/')">
-          Browse Posts
-        </a-button>
-      </a-empty>
+        <a-alert
+          v-if="loading"
+          message="Liked postlar yuklanmoqda..."
+          type="info"
+          show-icon
+          class="loading-alert"
+        />
 
-      <!-- MODAL: VIEW POST DETAILS -->
-      <a-modal
-        v-model:open="modalVisible"
-        :title="selectedPost?.title"
-        width="600"
-        @cancel="closeModal"
-      >
-        <template #footer>
-          <a-button @click="closeModal">Close</a-button>
-        </template>
-
-        <div class="post-content">
-          <img 
-            :src="selectedPost?.photoUrl" 
-            :alt="selectedPost?.title"
-            class="post-image"
-          />
-          <p>{{ selectedPost?.body }}</p>
-        </div>
-
-        <a-divider>Comments</a-divider>
-
-        <div class="comment-form">
-          <a-input
-            v-model:value="newComment"
-            placeholder="Add a comment..."
-            @pressEnter="addComment"
-          />
-          <a-button type="primary" @click="addComment">Post</a-button>
-        </div>
-
-        <a-spin :spinning="loadingComments">
-          <a-comment
-            v-for="comment in allComments"
-            :key="comment.id"
-            :author="comment.name"
-            :content="comment.body"
+        <a-row :gutter="[16, 16]" class="posts" v-else>
+          <a-col
+            v-for="p in likedPosts"
+            :key="p.id"
+            :xs="24"
+            :sm="12"
+            :md="8"
           >
-            <template #avatar>
-              <a-avatar :src="`https://i.pravatar.cc/40?u=${comment.email}`" />
-            </template>
-          </a-comment>
-        </a-spin>
-      </a-modal>
+            <PostCard :post="p" :showActions="false" @openModal="openPostModal" />
+          </a-col>
+        </a-row>
+
+        <a-empty
+          v-if="!loading && likedPosts.length === 0"
+          description="Hali hech qanday postni yoqtirmagansiz."
+          class="empty-state"
+        >
+          <template #image>
+            <heart-outlined style="font-size: 48px; color: #ff4d4f;" />
+          </template>
+          <a-button type="primary" @click="$router.push('/posts')">
+            Browse Posts
+          </a-button>
+        </a-empty>
+
+        <!-- MODAL: POST DETAILS -->
+        <a-modal
+          v-model:open="modalVisible"
+          :title="selectedPost?.title"
+          width="600"
+          @cancel="closeModal"
+        >
+          <template #footer>
+            <a-button @click="closeModal">Yopish</a-button>
+          </template>
+
+          <div class="post-content">
+            <img
+              :src="selectedPost?.photoUrl"
+              :alt="selectedPost?.title"
+              class="post-image"
+            />
+            <p>{{ selectedPost?.body }}</p>
+          </div>
+
+          <a-divider>Izohlar</a-divider>
+
+          <div class="comment-form">
+            <a-input
+              v-model:value="newComment"
+              placeholder="Izoh yozing..."
+              @pressEnter="addComment"
+            />
+            <a-button type="primary" @click="addComment">Yuborish</a-button>
+          </div>
+
+          <a-spin :spinning="loadingComments">
+            <a-comment
+              v-for="comment in allComments"
+              :key="comment.id"
+              :author="comment.name"
+              :content="comment.body"
+            >
+              <template #avatar>
+                <a-avatar :src="`https://i.pravatar.cc/40?u=${comment.email}`" />
+              </template>
+            </a-comment>
+          </a-spin>
+        </a-modal>
+      </template>
     </div>
   </PageLoader>
 </template>
 
 <script setup>
-import PostCard from './posts/components/PostCard.vue'
+import { ref, computed, onMounted } from 'vue'
 import { useLikesStore } from '@/stores/likes.pinia'
+import { useAuthStore } from '@/stores/auth.pinia'
 import { storeToRefs } from 'pinia'
 import { HeartOutlined } from '@ant-design/icons-vue'
-import { ref, computed, onMounted } from 'vue'
 import PageLoader from '@/components/PageLoader.vue'
+import PostCard from './posts/components/PostCard.vue'
 
+const auth = useAuthStore()
 const likesStore = useLikesStore()
 const { likedPosts } = storeToRefs(likesStore)
-const loading = ref(true)
 
+const loading = ref(true)
 const modalVisible = ref(false)
 const selectedPost = ref(null)
 
@@ -126,9 +140,9 @@ function addComment() {
 
   const comment = {
     id: Date.now(),
-    name: 'You',
+    name: 'Siz',
     body: newComment.value.trim(),
-    email: 'you@example.com'
+    email: 'siz@example.com'
   }
 
   userComments.value.push(comment)
@@ -142,7 +156,7 @@ async function fetchComments(postId) {
 
   try {
     const res = await fetch(`https://jsonplaceholder.typicode.com/comments?postId=${postId}`)
-    if (!res.ok) throw new Error('Failed to load comments')
+    if (!res.ok) throw new Error('Izohlar yuklanmadi')
     comments.value = await res.json()
   } catch (e) {
     console.error('Error fetching comments:', e)

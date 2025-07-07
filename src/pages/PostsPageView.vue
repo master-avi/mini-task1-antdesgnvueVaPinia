@@ -1,117 +1,120 @@
 <template>
   <PageLoader>
     <div class="posts-wrapper">
-      <!-- ADD BUTTON -->
-      <div class="top-bar">
-        <a-button type="primary" @click="showAdd = true">
-          <template #icon>
-            <PlusOutlined />
-          </template>
-          Add
-        </a-button>
-      </div>
 
-      <!-- MODAL: ADD POST -->
-      <a-modal v-model:open="showAdd" title="New Post" :footer="null">
-        <AddPostForm @added="showAdd = false" />
-      </a-modal>
-
-      <!-- MODAL: VIEW POST DETAILS -->
-<a-modal
-  v-model:open="modalVisible"
-  :title="selectedPost?.title"
-  width="600"
-  @cancel="closeModal"
->
-  <template #footer>
-    <a-button @click="closeModal">Close</a-button>
-  </template>
-
-  <div class="post-modal-content">
-    <div class="modal-image-wrapper">
-      <img 
-        :src="selectedPost?.photoUrl" 
-        :alt="selectedPost?.title"
-        class="post-modal-image"
+      <a-alert
+        v-if="!auth.isLoggedIn()"
+        message="Iltimos, postlarni ko‘rish uchun login qiling."
+        type="warning"
+        show-icon
+        style="margin-bottom: 16px"
       />
-    </div>
-    <p>{{ selectedPost?.body }}</p>
-  </div>
-
-  <a-divider>Comments</a-divider>
-
-  <!-- Comment form -->
-  <div class="comment-form">
-    <a-input
-      v-model:value="newComment"
-      placeholder="Add a comment..."
-      @pressEnter="addComment"
-    />
-    <a-button type="primary" @click="addComment">Post</a-button>
-  </div>
-
-  <!-- Comments list -->
-  <a-spin :spinning="loadingComments">
-    <a-comment
-      v-for="comment in allComments"
-      :key="comment.id"
-      :author="comment.name"
-      :content="comment.body"
-    >
-      <template #avatar>
-        <a-avatar :src="`https://i.pravatar.cc/40?u=${comment.email}`" />
-      </template>
-    </a-comment>
-  </a-spin>
-</a-modal>
-
-      <!-- MODAL: EDIT POST -->
-      <a-modal
-        v-model:open="editVisible"
-        title="Edit Post"
-        :footer="null"
-        @cancel="closeEditModal"
-      >
-        <EditPostForm :post="selectedPost" @updated="closeEditModal" />
-      </a-modal>
-
-      <!-- POSTS LIST -->
-      <a-row :gutter="[16, 16]" class="posts">
-        <a-col
-          v-for="p in pagedPosts"
-          :key="p.id"
-          :xs="24"
-          :sm="12"
-          :md="8"
+      <template v-else>
+        <div class="top-bar">
+          <LanguageSwitcher />
+          <a-button type="primary" @click="showAdd = true">
+            <template #icon>
+              <PlusOutlined />
+            </template>
+            {{ $t('add') }}
+          </a-button>
+        </div>
+        <a-modal v-model:open="showAdd" title="New Post" :footer="null">
+          <AddPostForm @added="showAdd = false" />
+        </a-modal>
+        <a-modal
+          v-model:open="modalVisible"
+          :title="selectedPost?.title"
+          width="600"
+          @cancel="closeModal"
         >
-          <PostCard :post="p" @openModal="openPostModal" @edit="openEditModal" />
-        </a-col>
-      </a-row>
+          <template #footer>
+            <a-button @click="closeModal">Close</a-button>
+          </template>
 
-      <!-- PAGINATION -->
-      <div class="pagination-wrapper">
-        <a-pagination
-          v-model:current="current"
-          :page-size="6"
-          :total="posts.length"
-          :show-size-changer="false"
-          @change="onPageChange"
-          show-less-items
-        />
-      </div>
+          <div class="post-modal-content">
+            <div class="modal-image-wrapper">
+              <img
+                :src="selectedPost?.photoUrl"
+                :alt="selectedPost?.title"
+                class="post-modal-image"
+              />
+            </div>
+            <p>{{ selectedPost?.body }}</p>
+          </div>
+
+          <a-divider>Comments</a-divider>
+          <div class="comment-form">
+            <a-input
+              v-model:value="newComment"
+              placeholder="Add a comment..."
+              @pressEnter="addComment"
+            />
+            <a-button type="primary" @click="addComment">Post</a-button>
+          </div>
+          <a-spin :spinning="loadingComments">
+            <a-comment
+              v-for="comment in allComments"
+              :key="comment.id"
+              :author="comment.name"
+              :content="comment.body"
+            >
+              <template #avatar>
+                <a-avatar :src="`https://i.pravatar.cc/40?u=${comment.email}`" />
+              </template>
+            </a-comment>
+          </a-spin>
+        </a-modal>
+        <a-modal
+          v-model:open="editVisible"
+          title="Edit Post"
+          :footer="null"
+          @cancel="closeEditModal"
+        >
+          <EditPostForm :post="selectedPost" @updated="closeEditModal" />
+        </a-modal>
+        <a-row :gutter="[16, 16]" class="posts">
+          <a-col
+            v-for="p in pagedPosts"
+            :key="p.id"
+            :xs="24"
+            :sm="12"
+            :md="8"
+          >
+            <PostCard :post="p" @openModal="openPostModal" @edit="openEditModal" />
+          </a-col>
+        </a-row>
+
+        <!-- PAGINATION -->
+        <div class="pagination-wrapper">
+          <a-pagination
+            v-model:current="current"
+            :page-size="6"
+            :total="posts.length"
+            :show-size-changer="false"
+            @change="onPageChange"
+            show-less-items
+          />
+        </div>
+      </template>
     </div>
   </PageLoader>
 </template>
 
+
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.pinia' // Auth store
 import { PlusOutlined } from '@ant-design/icons-vue'
 import PostCard from './posts/components/PostCard.vue'
 import AddPostForm from './posts/components/AddPostForm.vue'
 import EditPostForm from './posts/components/EditPostForm.vue'
 import { usePostsStore } from '@/stores/posts.pinia'
 import PageLoader from '@/components/PageLoader.vue'
+import LanguageSwitcher from '@/pages/posts/components/LanguageSwitcher.vue'
+
+const auth = useAuthStore() // Login holatini tekshirish
 
 const postsStore = usePostsStore()
 const posts = computed(() => postsStore.posts)
@@ -205,6 +208,7 @@ const pagedPosts = computed(() => {
   const start = (current.value - 1) * 6
   return posts.value.slice(start, start + 6)
 })
+
 function onPageChange(page) {
   current.value = page
 }
@@ -271,6 +275,7 @@ onMounted(() => {
   margin-bottom: 16px;
   margin-top: 16px;
 }
+
 .modal-image-wrapper {
   width: 100%;
   max-height: 400px;
@@ -289,5 +294,10 @@ onMounted(() => {
   object-fit: contain;
   display: block;
 }
-
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
 </style>
