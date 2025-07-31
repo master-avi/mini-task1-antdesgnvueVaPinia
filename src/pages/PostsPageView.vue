@@ -11,7 +11,6 @@
       />
       <template v-else>
         <div class="top-bar">
-          <LanguageSwitcher />
           <a-button type="primary" @click="showAdd = true">
             <template #icon>
               <PlusOutlined />

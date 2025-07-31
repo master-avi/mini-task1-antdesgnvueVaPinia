@@ -1,10 +1,7 @@
 <template>
   <div class="login-wrapper">
     <!-- 🌐 Til tanlash -->
-    <div class="language-switcher">
-      <LoginSwitcher />
-    </div>
-
+  
     <!-- 🔐 Login forma -->
     <a-card :title="$t('login')" style="max-width: 400px; width: 100%">
       <a-form @submit.prevent="handleLogin">
